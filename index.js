@@ -1,60 +1,56 @@
-const tracklist = [
-	["musen/songs/citypop/spacescraper.mp3", "SPACE SCRAPER", "TOSHIKI KADOMATSU", 330000, "musen/songs/covers/spacescraper.jpg"],
-	["musen/songs/citypop/plasticlove.mp3", "PLASTIC LOVE", "竹内 まりや", 476000, "musen/songs/covers/plasticlove.jpg" ],
-	["musen/songs/citypop/sunset.mp3", "SUNSET", "BLU-SWING", 209000, "musen/songs/covers/sunset.jpg" ],
-	["musen/songs/citypop/baycity.mp3", "BAY CITY", "黄昏の", 250000, "musen/songs/covers/baycity.jpg" ],
-	["musen/songs/citypop/summerbreeze.mp3", "SUMMER BREEZE", "PIPER", 203000, "musen/songs/covers/summerbreeze.jpg" ],
-	["musen/songs/citypop/catseye.mp3", "CAT'S EYE", "杏里", 189000, "musen/songs/covers/catseye.jpg" ],
-	["musen/songs/jazz/itcouldhappen.mp3", "IT COULD HAPPEN TO YOU", "RYO FUKUI", 257000, "musen/songs/covers/itcouldhappen.jpg" ],
-	["musen/songs/lofi/aruarian.mp3", "ARUARIAN DANCE", "NUJABES", 252000, "musen/songs/covers/aruarian.jpg" ],
-	["musen/songs/acid/zenmai.mp3", "ZENMAI", "ススム ヨコタ", 250000, "musen/songs/covers/zenmai.jpg" ]
-]
+const express = require('express');
+const http = require('http');
+const WebSocket = require('ws');
 
-const http = require("http");
-const WebSocketServer = require("websocket").server
-let connection = null;
-//create a raw http server (this will help us create the TCP which will then pass to the websocket to do the job)
-const httpserver = http.createServer((req, res) =>
-                console.log("we have received a request"))
- //pass the httpserver object to the WebSocketServer library to do all the job, this class will override the req/res
-const websocket = new WebSocketServer({
-    "httpServer": httpserver
-})
-httpserver.listen(5940, () => console.log("Server listening on port 5940"))
-//when a legit websocket request comes listen to it and get the connection .. once you get a connection thats it!
-websocket.on("request", request=> {
-    connection = request.accept(null, request.origin)
-    connection.on("open", () => console.log("Opened Connection"))
-    connection.on("close", () => console.log("Closed Connection"))
-    connection.on("message", message => {
-        console.log(`Server received: ${message.utf8Data}`)
-				sendSong(currentSongPlaying)
+const port = 5940;
+const server = http.createServer(express);
+const wss = new WebSocket.Server({ server });
+
+const {trackList} = require('./TrackList');
+
+server.listen(port, () => {
+    console.log(`Server is listening on port ${port}...`);
+});
+
+wss.on('connection', function connection(ws){
+    ws.on('message', function incoming(data){
+        wss.clients.forEach((client) => {
+            if (client.readyState == WebSocket.OPEN){
+                sendSong(client, currentSongPlaying)
+            }
+        });
     })
 })
 
-var currentSongPlaying = ""
+var currentSongPlaying = "";
 let currentSongLength = 10000;
+let currentSongStarted = Date.now();
 
 getNewSong()
 
 function getNewSong() {
 	var counter = Math.floor(Math.random()*9)
-	var songInfo = `${ tracklist[counter][0] },${ tracklist[counter][1] }|${ tracklist[counter][2] }?${ tracklist[counter][3] }@${ tracklist[counter][4] }`
-	console.log(`Next Song: ${ tracklist[counter][1] } - ${ tracklist[counter][2] }`)
+	var songInfo = trackList[counter]
+	console.log(`Next Song: ${ trackList[counter].SongTitle } - ${ trackList[counter].SongArtist }`)
 	currentSongPlaying = songInfo
-	currentSongLength = tracklist[counter][3]
-	console.log(currentSongLength)
-	if (connection!=null){
-		sendSong(currentSongPlaying)
-	}
+	currentSongLength = trackList[counter].SongLength
+	currentSongStarted = Date.now();
+	console.log(`Length: ${ currentSongLength }`)
+
+	wss.clients.forEach((client) => {
+      if (client.readyState == WebSocket.OPEN){
+          sendSong(client, currentSongPlaying)
+      }
+  });
+
 	setTimeout(getNewSong, currentSongLength)
+	console.log("New Song Picked!----------------------------------------------------------")
 }
 
 //Send Song Currently Playing
-function sendSong(currentSongPlaying){
-	let songSender = currentSongPlaying
-	let songLogger = currentSongPlaying.split('|').shift();
-	songLogger = songLogger.split(',').pop();
-	console.log(`Broadcasting: ${ songLogger }`)
-	connection.send(songSender)
+function sendSong(client, currentSongPlaying){
+	console.log(`Sending: ${ currentSongPlaying.SongTitle }`)
+	console.log(`Timestamp: ${ Date.now() - currentSongStarted }`)
+	let tempSong = JSON.stringify(currentSongPlaying)
+	client.send(tempSong.substring(0, tempSong.length - 1)+ `,"SongTimestamp":${ Date.now() - currentSongStarted }}`)
 }
