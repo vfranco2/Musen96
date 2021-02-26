@@ -29,7 +29,7 @@ let currentSongStarted = Date.now();
 getNewSong()
 
 function getNewSong() {
-	var counter = Math.floor(Math.random()*9)
+	var counter = Math.floor(Math.random()*25)
 	var songInfo = trackList[counter]
 	console.log(`Next Song: ${ trackList[counter].SongTitle } - ${ trackList[counter].SongArtist }`)
 	currentSongPlaying = songInfo
