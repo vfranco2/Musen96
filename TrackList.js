@@ -97,12 +97,12 @@ const trackList = [
 	{
     SongId: 18, SongLink: "musen/songs/jazz/adrenaline.mp3",
     SongTitle: "ADRENALINE", SongArtist: "INDIGO JAM UNIT",
-    SongLength: 269000, SongImage: "musen/songs/covers/realism.jpg"
+    SongLength: 269000, SongImage: "musen/songs/covers/realism.webp"
 	},
 	{
     SongId: 19, SongLink: "musen/songs/jazz/breeze.mp3",
     SongTitle: "BREEZE", SongArtist: "JIRO INAGAKI & SOUL MEDIA",
-    SongLength: 278000, SongImage: "musen/songs/covers/funkystuff.jpg"
+    SongLength: 278000, SongImage: "musen/songs/covers/funkystuff.webp"
 	},
 	{
     SongId: 20, SongLink: "musen/songs/jazz/qualia.mp3",
