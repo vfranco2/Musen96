@@ -1,20 +1,16 @@
 {
-  "name": "radiotest",
+  "name": "musen",
   "version": "1.0.0",
-  "description": "",
+  "description": "Internet Radio Test",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "keywords": [],
-  "author": "",
+  "author": "Vlad Franco",
   "license": "ISC",
   "dependencies": {
     "express": "^4.17.1",
-    "save": "^2.4.0",
-    "socket.io": "^3.1.0",
-    "socket.io-stream": "^0.9.1",
-    "websocket": "^1.0.33",
+    "websocket": "^1.0.34",
     "websocket-stream": "^5.5.2"
   }
 }
